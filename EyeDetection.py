@@ -30,8 +30,7 @@ class EyeDetector:
                 (x, y)는 좌상단 좌표, w/h는 너비/높이입니다.
                 얼굴이 감지되지 않으면 (None, None) 반환
         '''
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = self.face_mesh.process(rgb_frame)
+        results = self.face_mesh.process(frame)
         if not results.multi_face_landmarks:
             return None, None  # 얼굴이 안 잡히면 None 반환
 
