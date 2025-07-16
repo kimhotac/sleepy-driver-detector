@@ -1,0 +1,14 @@
+1. 엔비디아 드라이브 들어가기
+https://www.nvidia.com/ko-kr/drivers/results/
+
+2. GEFORCE RTX 4050 Laptop window 게임 드라이버로 깔고
+
+3. 빠른설치 하고 컴퓨터 재부팅
+
+4. true 나오면 성공
+import torch
+print(torch.version.cuda)           # CUDA 지원 버전 확인
+print(torch.cuda.is_available())    # GPU 사용 가능 여부
+
+5. 안나오면 밑에꺼 설치 후 확인
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
