@@ -3,15 +3,15 @@ from EyeCloseDetection import EyeCloseDetector
 class PointEyeCloseDetector(EyeCloseDetector):
     def __init__(self):
         super().__init__()
-        self.THRESHOLD = 3
+        self.THRESHOLD = 5.5
     
     def predict(self, points):
         x, y, w, h = points
-        if h < self.THRESHOLD:
-            prob = 1
-        else:
-            prob = 0
-        return prob
+        aspect_ratio = w / h if h != 0 else 0
+        if aspect_ratio > self.THRESHOLD:
+            # 눈이 감김
+            return 1
+        return 0
     
     def eye_close_detecte(self, frame):
         """
@@ -25,7 +25,15 @@ class PointEyeCloseDetector(EyeCloseDetector):
             tuple[float, float]: (왼쪽 눈 감김 확률, 오른쪽 눈 감김 확률)
         """
         left_points, right_points = self.get_bounding_boxes(frame)
-        left_close_prob = self.predict(left_points)
-        right_close_prob = self.predict(right_points)
+
+        if left_points is None:
+            left_close_prob = -1
+        else:
+            left_close_prob = self.predict(left_points)
+
+        if right_points is None :
+            right_close_prob = -1
+        else:
+            right_close_prob = self.predict(right_points)
 
         return left_close_prob, right_close_prob
