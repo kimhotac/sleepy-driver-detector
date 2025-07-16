@@ -27,7 +27,8 @@ class MLPEyeCloseDetector(EyeCloseDetector):
     
         with torch.no_grad():
             output = self.model(input_tensor)
-            pred = torch.argmax(output, dim=1).item()  # 0: closed, 1: open
+            pred_raw = torch.argmax(output, dim=1).item()  # 0: closed, 1: open
+            pred = 1 - pred_raw  # 0 → 1, 1 → 0 (반전)
         return pred
 
 class EyeCNN(nn.Module):
