@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
-# EyeDetector를 부모 클래스로 사용하기 위해 import 합니다.
-from EyeDetection import EyeDetector
 
-class OpencvEyeCloseDetector(EyeDetector):
+from EyeCloseDetection import EyeCloseDetector
+
+class OpencvEyeCloseDetector(EyeCloseDetector):
     """
     순수 OpenCV 기술만을 사용하여 눈의 개폐 상태를 판단하는 구현체입니다.
     입력: 90x90 크기의 눈 이미지(컬러 또는 흑백, 반드시 1장)
@@ -19,8 +19,7 @@ class OpencvEyeCloseDetector(EyeDetector):
         self.VARIANCE_MIN = 300.0
         self.VARIANCE_MAX = 1500.0
 
-        
-    def predict(self, eye_img: np.ndarray) -> float:
+    def predict(self, eye_img):
         # 1. 이미지 흑백으로 통일 : 색상 노이즈를 제거하고 밝기 정보만 남겨 주요 특징을 더 명확하게 분석
         """
         흑백은 밝기 정보만 남기므로, 눈꺼풀/동공/속눈썹 등 주요 특징 명확히 드러남
