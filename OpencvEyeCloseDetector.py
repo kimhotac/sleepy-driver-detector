@@ -129,4 +129,7 @@ class OpencvEyeCloseDetector(EyeCloseDetector):
         - 값이 1.0에 가까울수록 눈 감음, 0.0에 가까울수록 눈 뜸
         """
         final_score = 0.7 * edge_score + 0.3 * variance_score
-        return np.clip(final_score, 0.0, 1.0) 
+        result = np.clip(final_score, 0.0, 1.0) 
+        if (result <= 0.95): return 0
+        return 1
+        
