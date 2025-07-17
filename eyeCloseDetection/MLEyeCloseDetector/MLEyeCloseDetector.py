@@ -3,11 +3,16 @@
 import joblib
 import cv2
 import numpy as np
+import os
 from ..EyeCloseDetection import EyeCloseDetector
 
 class MLEyeCloseDetector(EyeCloseDetector):
     def __init__(self):
-        self.model = joblib.load("rf_model.pkl")
+        super().__init__()
+        # 현재 파일 기준 절대 경로 구성
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        model_path = os.path.join(base_dir, "rf_model.pkl")
+        self.model = joblib.load(model_path)
 
     def predict(self, eye_img):
         # 1. 이미지 전처리: 흑백 변환, 90x90 리사이즈, flatten
