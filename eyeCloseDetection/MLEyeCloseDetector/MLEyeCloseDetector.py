@@ -15,9 +15,8 @@ class MLEyeCloseDetector(EyeCloseDetector):
         self.model = joblib.load(model_path)
 
     def predict(self, eye_img):
-        # 1. 이미지 전처리: 흑백 변환, 90x90 리사이즈, flatten
-        gray = cv2.cvtColor(eye_img, cv2.COLOR_BGR2GRAY)
-        resized = cv2.resize(gray, (90, 90))
+        # 1. 이미지 전처리: 64x64 리사이즈, flatten
+        resized = cv2.resize(eye_img, (64, 64))
         flattened = resized.flatten().reshape(1, -1)
 
         # 2. 예측
