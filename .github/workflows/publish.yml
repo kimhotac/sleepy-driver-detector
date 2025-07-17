@@ -4,10 +4,6 @@ on:
   # infra 브랜치에 푸시 시 자동 배포
   push:
     branches: [infra]
-    paths:
-      - "sleepy_driver/**"
-      - "pyproject.toml"
-      - "setup.py"
 
   # 릴리즈 생성 시에도 배포 (백업)
   release:
