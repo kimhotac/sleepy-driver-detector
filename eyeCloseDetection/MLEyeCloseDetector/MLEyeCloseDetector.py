@@ -7,7 +7,7 @@ from ..EyeCloseDetection import EyeCloseDetector
 
 class MLEyeCloseDetector(EyeCloseDetector):
     def __init__(self):
-        self.model = joblib.load("eye_close_model.pkl")
+        self.model = joblib.load("rf_model.pkl")
 
     def predict(self, eye_img):
         # 1. 이미지 전처리: 흑백 변환, 90x90 리사이즈, flatten
