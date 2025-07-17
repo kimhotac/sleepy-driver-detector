@@ -1,5 +1,5 @@
 import cv2
-from MLEyeCloseDetector import MLEyeCloseDetector
+from eyeCloseDetection.MLEyeCloseDetector.MLEyeCloseDetector import MLEyeCloseDetector
 
 # 테스트할 이미지 불러오기_뜬 눈
 eye_img = cv2.imread("test_eye_120.png")

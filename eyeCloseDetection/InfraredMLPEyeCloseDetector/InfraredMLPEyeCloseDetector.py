@@ -1,4 +1,4 @@
-from EyeCloseDetection import EyeCloseDetector
+from eyeCloseDetection.EyeCloseDetection import EyeCloseDetector
 
 class InfraredMLPEyeCloseDetector(EyeCloseDetector):
     def predict(self, eye_img):

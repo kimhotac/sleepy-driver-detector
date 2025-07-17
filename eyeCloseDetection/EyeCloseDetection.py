@@ -1,4 +1,4 @@
-from EyeDetection import EyeDetector
+from eyeDetection.EyeDetection import EyeDetector
 import abc
 
 class EyeCloseDetector(EyeDetector, abc.ABC):

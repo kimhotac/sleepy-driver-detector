@@ -1,4 +1,4 @@
-from EyeCloseDetection import EyeCloseDetector
+from eyeCloseDetection.EyeCloseDetection import EyeCloseDetector
 
 class PointEyeCloseDetector(EyeCloseDetector):
     def __init__(self):
