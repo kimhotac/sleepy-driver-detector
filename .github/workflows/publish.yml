@@ -63,12 +63,35 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
 
-      - name: Extract version from pyproject.toml
+      - name: Auto increment version
         id: get_version
         run: |
-          VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "📋 Building version: $VERSION"
+          # 현재 버전 가져오기
+          CURRENT_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "📋 Current version: $CURRENT_VERSION"
+
+          # 패치 버전 자동 증가 (1.1.4 -> 1.1.5)
+          IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+          MAJOR=${VERSION_PARTS[0]}
+          MINOR=${VERSION_PARTS[1]}
+          PATCH=${VERSION_PARTS[2]}
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+
+          echo "🚀 New version: $NEW_VERSION"
+
+          # pyproject.toml만 업데이트 (__init__.py는 자동으로 읽어옴)
+          sed -i "s/version = \"$CURRENT_VERSION\"/version = \"$NEW_VERSION\"/" pyproject.toml
+
+          echo "VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Commit version changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add pyproject.toml
+          git commit -m "chore: auto increment version to ${{ steps.get_version.outputs.VERSION }}" || exit 0
+          git push
 
       - name: Build package
         run: |

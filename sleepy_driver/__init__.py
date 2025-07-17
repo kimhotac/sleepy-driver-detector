@@ -41,7 +41,12 @@ from .models.base import EyeStateDetector
 from .eye.targeting import EyeTargeting
 from .models.registry import ModelRegistry
 
-__version__ = "1.1.4"
+# 버전은 pyproject.toml에서 자동으로 읽어옴
+try:
+    import importlib.metadata
+    __version__ = importlib.metadata.version("sleepy-driver")
+except:
+    __version__ = "unknown"
 __author__ = "SleepyDriver Team"
 
 # 사용자가 주로 사용할 클래스들을 노출
