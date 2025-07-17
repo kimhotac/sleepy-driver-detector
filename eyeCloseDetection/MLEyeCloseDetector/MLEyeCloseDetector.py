@@ -21,4 +21,4 @@ class MLEyeCloseDetector(EyeCloseDetector):
 
         # 2. 예측
         prediction = self.model.predict(flattened)[0]  # 0 or 1
-        return prediction
+        return 1 - prediction  # 감은 눈을 1로 바꾸기 위해 반전
