@@ -41,7 +41,7 @@ from .models.base import EyeStateDetector
 from .eye.targeting import EyeTargeting
 from .models.registry import ModelRegistry
 
-__version__ = "1.1.1"
+__version__ = "1.1.4"
 __author__ = "SleepyDriver Team"
 
 # 사용자가 주로 사용할 클래스들을 노출
@@ -147,25 +147,90 @@ def start_detection(model_name="opencv", threshold_ms=1000, mirror=True, show_in
                 if show_info and result.success:
                     # 졸음 상태에 따른 표시
                     if result.is_drowsy:
-                        status_text = f"DROWSY! ({result.closed_duration_ms}ms)"
+                        status_text = f"DROWSY ALERT! ({result.closed_duration_ms}ms)"
                         color = (0, 0, 255)  # 빨간색
-                        # 경고 테두리
-                        cv2.rectangle(frame, (0, 0), (frame.shape[1], frame.shape[0]), color, 5)
+                        
+                        # 강력한 졸음 경고 효과!
+                        # 1. 깜빡이는 빨간 배경
+                        import time
+                        alpha = 0.3 if int(time.time() * 10) % 2 == 0 else 0.1
+                        overlay = frame.copy()
+                        cv2.rectangle(overlay, (0, 0), (frame.shape[1], frame.shape[0]), (0, 0, 255), -1)
+                        cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+                        
+                        # 2. 두꺼운 경고 테두리 (깜빡임)
+                        border_thickness = 15 if int(time.time() * 5) % 2 == 0 else 8
+                        cv2.rectangle(frame, (0, 0), (frame.shape[1], frame.shape[0]), color, border_thickness)
+                        
+                        # 3. 중앙 대형 경고 메시지 (demo.py와 동일하게!)
+                        warning_text = "DROWSINESS DETECTED!"
+                        text_size = cv2.getTextSize(warning_text, cv2.FONT_HERSHEY_SIMPLEX, 4.0, 12)[0]
+                        text_x = (frame.shape[1] - text_size[0]) // 2
+                        text_y = frame.shape[0] // 2
+                        
+                        # 경고 배경 (더 큰 박스)
+                        cv2.rectangle(frame, (text_x-60, text_y-100), (text_x+text_size[0]+60, text_y+60), 
+                                     (0, 0, 0), -1)
+                        cv2.rectangle(frame, (text_x-60, text_y-100), (text_x+text_size[0]+60, text_y+60), 
+                                     (0, 0, 255), 12)
+                        
+                        # 경고 텍스트 (검은 테두리로 더 선명하게!)
+                        # 검은 테두리 (8방향)
+                        for dx in [-3, 0, 3]:
+                            for dy in [-3, 0, 3]:
+                                if dx != 0 or dy != 0:
+                                    cv2.putText(frame, warning_text, (text_x + dx, text_y + dy),
+                                               cv2.FONT_HERSHEY_SIMPLEX, 4.0, (0, 0, 0), 15)
+                        # 메인 텍스트 (밝은 청록색)
+                        cv2.putText(frame, warning_text, (text_x, text_y),
+                                   cv2.FONT_HERSHEY_SIMPLEX, 4.0, (0, 255, 255), 12)
+                        
+                        # 상단 추가 경고 (테두리 효과)
+                        break_x = frame.shape[1]//2 - 250
+                        break_y = 120
+                        for dx in [-2, 0, 2]:
+                            for dy in [-2, 0, 2]:
+                                if dx != 0 or dy != 0:
+                                    cv2.putText(frame, "TAKE A BREAK!", (break_x + dx, break_y + dy),
+                                               cv2.FONT_HERSHEY_SIMPLEX, 3.5, (0, 0, 0), 10)
+                        cv2.putText(frame, "TAKE A BREAK!", (break_x, break_y),
+                                   cv2.FONT_HERSHEY_SIMPLEX, 3.5, (0, 255, 0), 8)
                     else:
                         status_text = "AWAKE"
                         color = (0, 255, 0)  # 초록색
                     
-                    # 정보 표시
-                    cv2.putText(frame, status_text, (20, 50), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
-                    cv2.putText(frame, f"Model: {model_name}", (20, 80), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
+                    # demo.py와 동일한 스타일로 정보 표시!
+                    # 눈 상태 결정
+                    eyes_status = "CLOSED" if result.both_eyes_closed else "OPEN"
+                    drowsy_status = "DROWSY ALERT!" if result.is_drowsy else "AWAKE"
                     
-                    # 눈 상태 표시 (화면 기준으로 올바르게 매핑)
-                    left_eye = "C" if result.right_eye_closed else "O"   # 화면 왼쪽 = 사용자 오른쪽 눈
-                    right_eye = "C" if result.left_eye_closed else "O"   # 화면 오른쪽 = 사용자 왼쪽 눈
-                    cv2.putText(frame, f"Eyes: L:{left_eye} R:{right_eye}", (20, 110), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                    # 좌우 눈 개별 상태 (화면 기준으로 올바르게 표시)
+                    left_status = "CLOSED" if result.right_eye_closed else "OPEN"   # 화면 왼쪽 = 사용자 오른쪽 눈
+                    right_status = "CLOSED" if result.left_eye_closed else "OPEN"   # 화면 오른쪽 = 사용자 왼쪽 눈
+                    
+                    # 정보 표시 (배경에 관계없이 잘 보이도록 검은 테두리 추가!)
+                    def draw_text_with_outline(img, text, pos, font, size, color, thickness, outline_color=(0, 0, 0), outline_thickness=2):
+                        """텍스트에 검은 테두리를 추가하여 가독성 향상"""
+                        x, y = pos
+                        # 1. 검은 테두리 그리기 (8방향)
+                        for dx in [-outline_thickness, 0, outline_thickness]:
+                            for dy in [-outline_thickness, 0, outline_thickness]:
+                                if dx != 0 or dy != 0:
+                                    cv2.putText(img, text, (x + dx, y + dy), font, size, outline_color, thickness + outline_thickness)
+                        # 2. 메인 텍스트 그리기
+                        cv2.putText(img, text, pos, font, size, color, thickness)
+                    
+                    # 모든 텍스트에 테두리 효과 적용
+                    draw_text_with_outline(frame, f"{model_name.upper()} MODEL", (25, 80),
+                                         cv2.FONT_HERSHEY_SIMPLEX, 2.2, (255, 255, 0), 6)
+                    draw_text_with_outline(frame, f"EYES: {eyes_status}", (25, 160),
+                                         cv2.FONT_HERSHEY_SIMPLEX, 2.2, (0, 255, 0), 6)
+                    draw_text_with_outline(frame, f"L:{left_status[:1]} R:{right_status[:1]}", (25, 240),
+                                         cv2.FONT_HERSHEY_SIMPLEX, 2.2, (255, 255, 0), 6)
+                    draw_text_with_outline(frame, f"STATUS: {drowsy_status}", (25, 320),
+                                         cv2.FONT_HERSHEY_SIMPLEX, 2.2, color, 6)
+                    draw_text_with_outline(frame, f"DURATION: {result.closed_duration_ms:.0f}ms", (25, 400),
+                                         cv2.FONT_HERSHEY_SIMPLEX, 2.2, (0, 255, 255), 6)
             
             # 화면 표시
             if 'frame' in locals():

@@ -53,7 +53,7 @@ def main():
     parser.add_argument(
         "--version", "-v",
         action="version",
-        version="SleepyDriver 1.1.1"
+        version="SleepyDriver 1.1.4"
     )
     
     args = parser.parse_args()

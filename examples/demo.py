@@ -93,17 +93,29 @@ def main():
             # 색상 설정
             color = (0, 0, 255) if result.is_drowsy else (0, 255, 0)
             
-            # 정보 표시 (초대형! 멀리서도 확실히 보이도록!)
-            cv2.putText(frame, f"{selected_model.upper()} MODEL", (25, 80),
-                       cv2.FONT_HERSHEY_SIMPLEX, 2.2, (255, 255, 0), 6)
-            cv2.putText(frame, f"EYES: {eyes_status}", (25, 160),
-                       cv2.FONT_HERSHEY_SIMPLEX, 2.2, (0, 255, 0), 6)
-            cv2.putText(frame, f"L:{left_status[:1]} R:{right_status[:1]}", (25, 240),
-                       cv2.FONT_HERSHEY_SIMPLEX, 2.2, (255, 255, 0), 6)
-            cv2.putText(frame, f"STATUS: {drowsy_status}", (25, 320),
-                       cv2.FONT_HERSHEY_SIMPLEX, 2.2, color, 6)
-            cv2.putText(frame, f"DURATION: {result.closed_duration_ms:.0f}ms", (25, 400),
-                       cv2.FONT_HERSHEY_SIMPLEX, 2.2, (100, 255, 255), 6)
+            # 정보 표시 (배경에 관계없이 잘 보이도록 검은 테두리 추가!)
+            def draw_text_with_outline(img, text, pos, font, size, color, thickness, outline_color=(0, 0, 0), outline_thickness=2):
+                """텍스트에 검은 테두리를 추가하여 가독성 향상"""
+                x, y = pos
+                # 1. 검은 테두리 그리기 (8방향)
+                for dx in [-outline_thickness, 0, outline_thickness]:
+                    for dy in [-outline_thickness, 0, outline_thickness]:
+                        if dx != 0 or dy != 0:
+                            cv2.putText(img, text, (x + dx, y + dy), font, size, outline_color, thickness + outline_thickness)
+                # 2. 메인 텍스트 그리기
+                cv2.putText(img, text, pos, font, size, color, thickness)
+            
+            # 모든 텍스트에 테두리 효과 적용
+            draw_text_with_outline(frame, f"{selected_model.upper()} MODEL", (25, 80),
+                                 cv2.FONT_HERSHEY_SIMPLEX, 2.2, (255, 255, 0), 6)
+            draw_text_with_outline(frame, f"EYES: {eyes_status}", (25, 160),
+                                 cv2.FONT_HERSHEY_SIMPLEX, 2.2, (0, 255, 0), 6)
+            draw_text_with_outline(frame, f"L:{left_status[:1]} R:{right_status[:1]}", (25, 240),
+                                 cv2.FONT_HERSHEY_SIMPLEX, 2.2, (255, 255, 0), 6)
+            draw_text_with_outline(frame, f"STATUS: {drowsy_status}", (25, 320),
+                                 cv2.FONT_HERSHEY_SIMPLEX, 2.2, color, 6)
+            draw_text_with_outline(frame, f"DURATION: {result.closed_duration_ms:.0f}ms", (25, 400),
+                                 cv2.FONT_HERSHEY_SIMPLEX, 2.2, (100, 255, 255), 6)
             
             # 졸음 경고 - 매우 강한 시각적 효과!
             if result.is_drowsy:
@@ -129,13 +141,27 @@ def main():
                 cv2.rectangle(frame, (text_x-60, text_y-100), (text_x+text_size[0]+60, text_y+60), 
                              (0, 0, 255), 12)
                 
-                # 경고 텍스트 (거대한 글씨)
+                # 경고 텍스트 (검은 테두리로 더 선명하게!)
+                # 검은 테두리 (8방향)
+                for dx in [-3, 0, 3]:
+                    for dy in [-3, 0, 3]:
+                        if dx != 0 or dy != 0:
+                            cv2.putText(frame, warning_text, (text_x + dx, text_y + dy),
+                                       cv2.FONT_HERSHEY_SIMPLEX, 4.0, (0, 0, 0), 15)
+                # 메인 텍스트 (밝은 청록색)
                 cv2.putText(frame, warning_text, (text_x, text_y),
-                           cv2.FONT_HERSHEY_SIMPLEX, 4.0, (255, 255, 255), 12)
+                           cv2.FONT_HERSHEY_SIMPLEX, 4.0, (0, 255, 255), 12)
                 
-                # 4. 상단에 추가 경고 (거대하게)
-                cv2.putText(frame, "TAKE A BREAK!", (frame.shape[1]//2 - 250, 120),
-                           cv2.FONT_HERSHEY_SIMPLEX, 3.5, (0, 0, 255), 8)
+                # 상단 추가 경고 (테두리 효과)
+                break_x = frame.shape[1]//2 - 250
+                break_y = 120
+                for dx in [-2, 0, 2]:
+                    for dy in [-2, 0, 2]:
+                        if dx != 0 or dy != 0:
+                            cv2.putText(frame, "TAKE A BREAK!", (break_x + dx, break_y + dy),
+                                       cv2.FONT_HERSHEY_SIMPLEX, 3.5, (0, 0, 0), 10)
+                cv2.putText(frame, "TAKE A BREAK!", (break_x, break_y),
+                           cv2.FONT_HERSHEY_SIMPLEX, 3.5, (0, 255, 0), 8)
                 
                 # 5. 터미널에도 경고 메시지 + 다양한 소리 시도
                 if int(time.time() * 2) % 2 == 0:  # 0.5초마다
@@ -170,15 +196,35 @@ def main():
                     except:
                         pass  # 소리 재생 실패 시 무시
                 
-        # FPS 표시 (거대하게!)
+        # FPS 표시 (테두리 효과로 어떤 배경에서도 보이게!)
         elapsed = time.time() - start_time
         if elapsed > 0:
             fps = frame_count / elapsed
-            cv2.putText(frame, f"FPS: {fps:.1f}", (frame.shape[1] - 280, 70),
+            fps_text = f"FPS: {fps:.1f}"
+            fps_x = frame.shape[1] - 280
+            fps_y = 70
+            # 검은 테두리
+            for dx in [-2, 0, 2]:
+                for dy in [-2, 0, 2]:
+                    if dx != 0 or dy != 0:
+                        cv2.putText(frame, fps_text, (fps_x + dx, fps_y + dy),
+                                   cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0, 0, 0), 7)
+            # 메인 텍스트
+            cv2.putText(frame, fps_text, (fps_x, fps_y),
                        cv2.FONT_HERSHEY_SIMPLEX, 1.8, (255, 255, 255), 5)
         
-        # 사용법 안내 (거대하게!)
-        cv2.putText(frame, "Press 'Q' to QUIT", (25, frame.shape[0] - 50),
+        # 사용법 안내 (테두리 효과!)
+        quit_text = "Press 'Q' to QUIT"
+        quit_x = 25
+        quit_y = frame.shape[0] - 50
+        # 검은 테두리
+        for dx in [-2, 0, 2]:
+            for dy in [-2, 0, 2]:
+                if dx != 0 or dy != 0:
+                    cv2.putText(frame, quit_text, (quit_x + dx, quit_y + dy),
+                               cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0, 0, 0), 7)
+        # 메인 텍스트
+        cv2.putText(frame, quit_text, (quit_x, quit_y),
                    cv2.FONT_HERSHEY_SIMPLEX, 1.8, (200, 200, 200), 5)
         
         # 화면 표시
