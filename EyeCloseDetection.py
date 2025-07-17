@@ -37,10 +37,19 @@ class EyeCloseDetector(EyeDetector, abc.ABC):
         """
         left_points, right_points = self.get_bounding_boxes(frame)
 
-        left_img = self.crop_and_resize(frame, left_points)
-        right_img = self.crop_and_resize(frame, right_points)
+        
+        if left_points is None:
+            left_close_prob = -1
 
-        left_close_prob = self.predict(left_img)
-        right_close_prob = self.predict(right_img)
+        else:
+            left_img = self.crop_and_resize(frame, left_points)
+            left_close_prob = self.predict(left_img)
+
+        if right_points is None :
+            right_close_prob = -1
+            
+        else:
+            right_img = self.crop_and_resize(frame, right_points)
+            right_close_prob = self.predict(right_img)
 
         return left_close_prob, right_close_prob
