@@ -1,0 +1,145 @@
+name: 🚀 Publish to PyPI
+
+on:
+  # infra 브랜치에 푸시 시 자동 배포
+  push:
+    branches: [infra]
+    paths:
+      - "sleepy_driver/**"
+      - "pyproject.toml"
+      - "setup.py"
+
+  # 릴리즈 생성 시에도 배포 (백업)
+  release:
+    types: [published]
+
+  # 수동 실행 (infra 브랜치에서만)
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish"
+        required: true
+        default: "1.0.1"
+
+jobs:
+  # 테스트 실행
+  test:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/infra' || github.event_name == 'release'
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, "3.10", "3.11"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Run basic import test
+        run: |
+          python -c "from sleepy_driver import quick_detector; print('Import success!')"
+          python -c "from sleepy_driver import list_available_models; print('Models:', list_available_models())"
+
+  # PyPI 배포 (infra 브랜치에서만)
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/infra' || github.event_name == 'release'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Extract version from pyproject.toml
+        id: get_version
+        run: |
+          VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "📋 Building version: $VERSION"
+
+      - name: Build package
+        run: |
+          python -m build
+
+      - name: Check package
+        run: |
+          python -m twine check dist/*
+
+      - name: List package contents
+        run: |
+          echo "📦 Built packages:"
+          ls -la dist/
+          echo ""
+          echo "📋 Package contents:"
+          python -m zipfile -l dist/*.whl | head -20
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          echo "🚀 Publishing sleepy-driver v${{ steps.get_version.outputs.VERSION }} to PyPI..."
+          python -m twine upload dist/*
+          echo "✅ Successfully published to PyPI!"
+
+      - name: Create GitHub release summary
+        run: |
+          echo "🎉 Package successfully published!" >> $GITHUB_STEP_SUMMARY
+          echo "📦 **Package**: sleepy-driver" >> $GITHUB_STEP_SUMMARY
+          echo "🏷️ **Version**: ${{ steps.get_version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **PyPI**: https://pypi.org/project/sleepy-driver/" >> $GITHUB_STEP_SUMMARY
+          echo "🌿 **Branch**: infra" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 설치 방법" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "pip install sleepy-driver" >> $GITHUB_STEP_SUMMARY
+          echo "sleepy-driver-demo" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+  # TestPyPI 배포 (develop 브랜치용)
+  deploy-test:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package
+        run: |
+          python -m build
+
+      - name: Publish to TestPyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        run: |
+          echo "🧪 Publishing to TestPyPI..."
+          python -m twine upload --repository testpypi dist/*
+          echo "✅ Successfully published to TestPyPI!"
