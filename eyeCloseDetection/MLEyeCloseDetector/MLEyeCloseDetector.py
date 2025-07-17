@@ -3,7 +3,7 @@
 import joblib
 import cv2
 import numpy as np
-from eyeCloseDetection.EyeCloseDetection import EyeCloseDetector
+from ..EyeCloseDetection import EyeCloseDetector
 
 class MLEyeCloseDetector(EyeCloseDetector):
     def __init__(self):

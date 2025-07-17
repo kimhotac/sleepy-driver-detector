@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
-from eyeCloseDetection.EyeCloseDetection import EyeCloseDetector
+from ..EyeCloseDetection import EyeCloseDetector
 
 class MLPEyeCloseDetector(EyeCloseDetector):
     def __init__ (self, model_path):
