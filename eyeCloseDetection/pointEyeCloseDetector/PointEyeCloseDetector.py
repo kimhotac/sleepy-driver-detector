@@ -24,7 +24,7 @@ class PointEyeCloseDetector(EyeCloseDetector):
         Returns:
             tuple[float, float]: (왼쪽 눈 감김 확률, 오른쪽 눈 감김 확률)
         """
-        left_points, right_points = self.get_bounding_boxes(frame)
+        left_points, right_points = self.ED.get_bounding_boxes(frame)
 
         if left_points is None:
             left_close_prob = -1
