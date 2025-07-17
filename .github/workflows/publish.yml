@@ -85,14 +85,6 @@ jobs:
 
           echo "VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Commit version changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add pyproject.toml
-          git commit -m "chore: auto increment version to ${{ steps.get_version.outputs.VERSION }}" || exit 0
-          git push
-
       - name: Build package
         run: |
           python -m build
