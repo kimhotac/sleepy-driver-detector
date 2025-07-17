@@ -1,7 +1,7 @@
 from eyeDetection.EyeDetection import EyeDetector
 import abc
 
-class EyeCloseDetector(EyeDetector, abc.ABC):
+class EyeCloseDetector(abc.ABC):
     def __init__(self):
         """
         EyeCloseDetector는 EyeDetector를 상속받아,
@@ -10,6 +10,7 @@ class EyeCloseDetector(EyeDetector, abc.ABC):
         서브클래스는 반드시 `predict` 메서드를 구현해야 합니다.
         """
         super().__init__()
+        self.ED = EyeDetector()
     
     @abc.abstractmethod
     def predict(self, eye_img):
@@ -35,21 +36,21 @@ class EyeCloseDetector(EyeDetector, abc.ABC):
         Returns:
             tuple[float, float]: (왼쪽 눈 감김 확률, 오른쪽 눈 감김 확률)
         """
-        left_points, right_points = self.get_bounding_boxes(frame)
+        left_points, right_points = self.ED.get_bounding_boxes(frame)
 
         
         if left_points is None:
             left_close_prob = -1
 
         else:
-            left_img = self.crop_and_resize(frame, left_points)
+            left_img = self.ED.crop_and_resize(frame, left_points)
             left_close_prob = self.predict(left_img)
 
         if right_points is None :
             right_close_prob = -1
             
         else:
-            right_img = self.crop_and_resize(frame, right_points)
+            right_img = self.ED.crop_and_resize(frame, right_points)
             right_close_prob = self.predict(right_img)
 
         return left_close_prob, right_close_prob
