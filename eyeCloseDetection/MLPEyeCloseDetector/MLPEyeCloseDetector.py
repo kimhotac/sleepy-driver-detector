@@ -1,12 +1,16 @@
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
+import os
 from ..EyeCloseDetection import EyeCloseDetector
 
 class MLPEyeCloseDetector(EyeCloseDetector):
-    def __init__ (self, model_path):
+    def __init__ (self):
         super().__init__()  # 부모 클래스 초기화 (필요한 경우)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        model_path = os.path.join(base_dir, "eye_cnn_model_early_stopping.pth")
 
         self.model = EyeCNN().to(self.device)
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
