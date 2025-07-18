@@ -10,7 +10,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="sleepy-driver",
-    version="1.2.3",
+    version="1.2.4",
     author="SleepyDriver Team",
     author_email="junju404@naver.com",
     description="운전자 피로도 분석 시스템 - 영상 기반 눈 감김 분석을 통한 실시간 피로도 판단 라이브러리",

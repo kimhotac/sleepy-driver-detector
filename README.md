@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/sleepy-driver)](https://pypi.org/project/sleepy-driver/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**SleepyDriver**는 운전자의 졸음 상태를 AI(컴퓨터 비전)로 감지하는 파이썬 라이브러리입니다. 5가지 다양한 감지 모델을 지원하며, 간단한 API로 프로젝트에 쉽게 통합할 수 있습니다.
+**SleepyDriver**는 실시간 비디오에서 운전자의 졸음 상태를 AI로 감지하는 파이썬 라이브러리입니다. 5가지 다양한 감지 모델을 지원하며, 간단한 API로 프로젝트에 쉽게 통합할 수 있습니다.
 
 ## ✨ 주요 기능
 
@@ -20,18 +20,42 @@
 ### 설치
 
 ```bash
+# 기본 설치 (OpenCV 모델만)
 pip install sleepy-driver
+
+# 모든 모델 포함 설치 (권장)
+pip install sleepy-driver[all]
+
+# 선택적 설치
+pip install sleepy-driver[ml]    # 머신러닝 모델
+pip install sleepy-driver[dl]    # 딥러닝 모델
 ```
 
-### 코드 사용법 (초간단!)
+### CLI로 바로 사용
+
+```bash
+# 기본 실행
+sleepy-driver-demo
+
+# 다른 모델로 실행
+sleepy-driver-demo --model mlp --threshold 2000
+
+# 사용 가능한 모델 확인
+sleepy-driver-demo --list-models
+```
+
+### 코드로 사용 (초간단!)
+
+#### 🚀 원라이너 (가장 간단!)
 
 ```python
+# 1줄로 바로 시작!
 from sleepy_driver import start_detection
 start_detection('mlp')  # MLP 모델로 바로 시작
-# start_detection('ml', threshold_ms=2000)  # ML 모델, 2초 임계값
-# start_detection('opencv')  # OpenCV 모델
-# start_detection('point')  # MediaPipe 모델
-# start_detection('infrared')  # 적외선 모델
+start_detection('ml', threshold_ms=2000)  # ML 모델, 2초 임계값
+start_detection('opencv')  # OpenCV 모델
+start_detection('point')  # MediaPipe 모델
+start_detection('infrared')  # 적외선 모델
 ```
 
 ## 📋 지원 모델
@@ -56,14 +80,16 @@ start_detection('mlp')  # MLP 모델로 바로 시작
 
 _테스트 환경: MacBook Pro M1, 720p 웹캠_
 
-## 👥 라이브러리 소개
+## 👥 팀원 소개
 
 **운전자 피로도 분석 시스템** - 영상 기반 눈 감김 분석을 통한 실시간 피로도 판단 라이브러리
 
-### 🎯 라이브러리 목적
+### 🎯 프로젝트 목적
 
 - **운전자의 눈이 감겼는가를 이진 분류**
 - **눈을 감은 시간이 몇 초인지 정량 분석**
+- **실시간 운전자 피로도 분석 모듈의 통합 라이브러리 구축**
+- **스마트카 연계**: ADAS 및 자율주행 시스템의 운전자 모니터링 기능 강화
 - **사회적 효과**: 사고 예방 AI 구현 가능
 - **기술 학습 효과**: 실시간 영상 처리, 시계열 데이터 분석, Vision 기반 분류 등 산업 적용력 높은 실전형 경험
 
