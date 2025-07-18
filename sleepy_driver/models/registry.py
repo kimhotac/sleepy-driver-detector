@@ -94,6 +94,11 @@ def _create_point_model():
     from .point_model import PointEyeModel
     return PointEyeModel()
 
+def _create_infrared_mlp_model():
+    """InfraredMLP 모델 팩토리"""
+    from .infrared_mlp_model import InfraredMLPEyeModel
+    return InfraredMLPEyeModel()
+
 # 모델들을 자동 등록
 def _register_default_models():
     """기본 제공 모델들을 레지스트리에 등록"""
@@ -101,6 +106,7 @@ def _register_default_models():
     ModelRegistry.register("ml", _create_ml_model)
     ModelRegistry.register("mlp", _create_mlp_model)
     ModelRegistry.register("point", _create_point_model)
+    ModelRegistry.register("infrared", _create_infrared_mlp_model)
     
     print(f"등록된 모델들: {ModelRegistry.list_models()}")
 

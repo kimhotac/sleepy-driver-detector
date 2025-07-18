@@ -15,6 +15,7 @@ from .opencv_model import OpenCVEyeModel
 from .ml_model import MLEyeModel
 from .mlp_model import MLPEyeModel
 from .point_model import PointEyeModel
+from .infrared_mlp_model import InfraredMLPEyeModel
 
 __all__ = [
     "ModelRegistry",
@@ -22,5 +23,6 @@ __all__ = [
     "OpenCVEyeModel",
     "MLEyeModel",
     "MLPEyeModel",
-    "PointEyeModel"
+    "PointEyeModel",
+    "InfraredMLPEyeModel"
 ] 
