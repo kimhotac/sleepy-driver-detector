@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenCV 기반 졸음 운전 감지 - 눈 감김 상태 판별 알고리즘</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Malgun Gothic", Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #333;
+        overflow: hidden;
+      }
+
+      .presentation-container {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        position: relative;
+      }
+
+      .slide {
+        width: 100%;
+        height: 100%;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 40px;
+        background: white;
+        margin: 20px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        overflow-y: auto;
+      }
+
+      .slide.active {
+        display: flex;
+      }
+
+      /* 슬라이드 1: 제목 */
+      .slide-title {
+        text-align: center;
+      }
+
+      .slide-title h1 {
+        font-size: 3em;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        background: linear-gradient(45deg, #3498db, #8e44ad);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .slide-title h2 {
+        font-size: 1.8em;
+        color: #34495e;
+        margin-bottom: 30px;
+      }
+
+      .subtitle {
+        margin: 30px 0;
+        font-size: 1.2em;
+        color: #7f8c8d;
+      }
+
+      .preview-images {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin-top: 40px;
+      }
+
+      .eye-image {
+        width: 200px;
+        height: 120px;
+        background: #ecf0f1;
+        border: 3px solid #bdc3c7;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1em;
+        color: #7f8c8d;
+      }
+
+      .arrow {
+        font-size: 2em;
+        color: #e74c3c;
+      }
+
+      /* 슬라이드 2: 문제 정의 */
+      .question-box {
+        background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+        padding: 30px;
+        border-radius: 15px;
+        margin: 20px 0;
+        text-align: center;
+      }
+
+      .question-box h2 {
+        font-size: 2em;
+        color: #2c3e50;
+      }
+
+      .comparison-table {
+        width: 100%;
+        margin: 30px 0;
+      }
+
+      .comparison-table table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .comparison-table th {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        padding: 20px;
+        font-size: 1.3em;
+      }
+
+      .comparison-table td {
+        padding: 20px;
+        border-bottom: 1px solid #ecf0f1;
+        font-size: 1.1em;
+        line-height: 1.8;
+      }
+
+      .approach {
+        background: #d5f4e6;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 5px solid #27ae60;
+        margin-top: 30px;
+      }
+
+      /* 슬라이드 3: 플로우차트 */
+      .flowchart {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .flow-box {
+        border: 3px solid #3498db;
+        padding: 25px;
+        border-radius: 15px;
+        min-width: 300px;
+        text-align: center;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .flow-box.preprocessing {
+        background: linear-gradient(45deg, #e3f2fd, #bbdefb);
+        border-color: #2196f3;
+      }
+
+      .flow-box.detection {
+        background: linear-gradient(45deg, #fff3e0, #ffcc02);
+        border-color: #ff9800;
+      }
+
+      .flow-box.decision {
+        background: linear-gradient(45deg, #f3e5f5, #e1bee7);
+        border-color: #9c27b0;
+      }
+
+      .flow-box h3 {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+        color: #2c3e50;
+      }
+
+      .flow-items {
+        font-size: 1.1em;
+        line-height: 1.6;
+      }
+
+      .flow-arrow {
+        font-size: 2em;
+        color: #e74c3c;
+      }
+
+      .strategy {
+        background: #ffeaa7;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 5px solid #fdcb6e;
+        margin-top: 30px;
+        text-align: center;
+      }
+
+      /* 슬라이드 4: 전처리 */
+      .preprocessing-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        width: 100%;
+      }
+
+      .step {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 10px;
+        border-left: 5px solid #3498db;
+      }
+
+      .step h3 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+        font-size: 1.3em;
+      }
+
+      .step code {
+        background: #2c3e50;
+        color: #ecf0f1;
+        padding: 10px;
+        border-radius: 5px;
+        display: block;
+        margin: 10px 0;
+        font-family: "Courier New", monospace;
+      }
+
+      .step ul {
+        margin-left: 20px;
+        margin-top: 10px;
+      }
+
+      .step li {
+        margin: 5px 0;
+        line-height: 1.5;
+      }
+
+      /* 슬라이드 5: 검출 알고리즘 */
+      .detection-priority {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        width: 100%;
+      }
+
+      .priority-1,
+      .priority-2,
+      .priority-3 {
+        padding: 25px;
+        border-radius: 10px;
+        border-left: 5px solid;
+      }
+
+      .priority-1 {
+        background: #fff5f5;
+        border-color: #e53e3e;
+      }
+
+      .priority-2 {
+        background: #fffbeb;
+        border-color: #dd6b20;
+      }
+
+      .priority-3 {
+        background: #f0fff4;
+        border-color: #38a169;
+      }
+
+      .logic {
+        background: #f7fafc;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+        border: 1px solid #e2e8f0;
+      }
+
+      /* 슬라이드 6: 매개변수 */
+      .parameter-table {
+        width: 100%;
+        margin: 20px 0;
+      }
+
+      .parameter-table table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .parameter-table th {
+        background: #2c3e50;
+        color: white;
+        padding: 15px;
+        font-size: 1.1em;
+      }
+
+      .parameter-table td {
+        padding: 15px;
+        border-bottom: 1px solid #ecf0f1;
+        text-align: center;
+      }
+
+      .threshold-visual {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 30px;
+      }
+
+      /* 슬라이드 7: 판정 로직 */
+      .decision-logic {
+        width: 100%;
+      }
+
+      .if-condition,
+      .else-condition {
+        background: #f8f9fa;
+        padding: 25px;
+        margin: 20px 0;
+        border-radius: 10px;
+        border-left: 5px solid #3498db;
+      }
+
+      .calculation {
+        background: #fff5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 15px 0;
+      }
+
+      .final-decision {
+        background: #f0fff4;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 15px 0;
+      }
+
+      /* 슬라이드 8: 한계점 */
+      .critical-issue {
+        background: #ffebee;
+        border: 2px solid #f44336;
+        border-radius: 10px;
+        padding: 25px;
+        margin: 20px 0;
+        text-align: center;
+      }
+
+      .risk-box {
+        background: #ffcdd2;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+      }
+
+      .comparison-others {
+        margin: 30px 0;
+      }
+
+      .why-failed {
+        background: #fff3cd;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 5px solid #ffc107;
+        margin-top: 20px;
+      }
+
+      /* 슬라이드 9: 트러블슈팅 */
+      .troubleshooting-content {
+        width: 100%;
+      }
+
+      .trouble-box {
+        background: #fff8e1;
+        padding: 25px;
+        border-radius: 10px;
+        border-left: 5px solid #ffc107;
+        margin: 20px 0;
+      }
+
+      .solution-box {
+        background: #e8f5e8;
+        padding: 25px;
+        border-radius: 10px;
+        border-left: 5px solid #4caf50;
+        margin: 20px 0;
+      }
+
+      .learning-box {
+        background: #e3f2fd;
+        padding: 25px;
+        border-radius: 10px;
+        border-left: 5px solid #2196f3;
+        margin: 20px 0;
+      }
+
+      /* 슬라이드 10: 결론 */
+      .honest-assessment {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        width: 100%;
+        margin: 30px 0;
+      }
+
+      .what-learned,
+      .what-missing {
+        padding: 25px;
+        border-radius: 10px;
+      }
+
+      .what-learned {
+        background: #e8f5e8;
+        border-left: 5px solid #4caf50;
+      }
+
+      .what-missing {
+        background: #ffebee;
+        border-left: 5px solid #f44336;
+      }
+
+      .final-message {
+        text-align: center;
+        margin-top: 40px;
+      }
+
+      .reality-check {
+        background: #f5f5f5;
+        padding: 30px;
+        border-radius: 10px;
+        margin: 20px 0;
+      }
+
+      .practical-use {
+        background: #e3f2fd;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+      }
+
+      /* 네비게이션 */
+      .navigation {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        display: flex;
+        gap: 10px;
+        z-index: 1000;
+      }
+
+      .nav-btn {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background 0.3s;
+      }
+
+      .nav-btn:hover {
+        background: #2980b9;
+      }
+
+      .nav-btn:disabled {
+        background: #bdc3c7;
+        cursor: not-allowed;
+      }
+
+      .slide-counter {
+        position: fixed;
+        bottom: 30px;
+        left: 30px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        z-index: 1000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="presentation-container">
+      <!-- 슬라이드 1: 제목 -->
+      <div class="slide active">
+        <div class="slide-title">
+          <h1>🚗 OpenCV 기반 졸음 운전 감지</h1>
+          <h2>눈 감김 상태 판별 알고리즘</h2>
+
+          <div class="subtitle">
+            <p>저수준 컴퓨터 비전 접근법</p>
+            <p>발표자: [이름] | 날짜: [날짜]</p>
+          </div>
+
+          <div class="preview-images">
+            <div class="eye-image">👁️ 눈 뜬 상태</div>
+            <span class="arrow">→</span>
+            <div class="eye-image">😴 눈 감은 상태</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 슬라이드 2: 문제 정의 -->
+      <div class="slide">
+        <h1>💡 핵심 질문</h1>
+
+        <div class="question-box">
+          <h2>"눈을 감으면 이미지에서 무엇이 달라질까?"</h2>
+        </div>
+
+        <div class="comparison-table">
+          <table>
+            <tr>
+              <th>👁️ 눈 뜸</th>
+              <th>😴 눈 감음</th>
+            </tr>
+            <tr>
+              <td>
+                • 동공(검은 원형)<br />
+                • 다양한 밝기 분포<br />
+                • 복잡한 경계선<br />
+                • 높은 밝기 분산
+              </td>
+              <td>
+                • 눈꺼풀(평면)<br />
+                • 단조로운 밝기<br />
+                • 강한 가로선<br />
+                • 낮은 밝기 분산
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="approach">
+          <h3>🎯 접근 방법: 이 차이점들을 OpenCV로 직접 측정하자!</h3>
+        </div>
+      </div>
+
+      <!-- 슬라이드 3: 전체 플로우 -->
+      <div class="slide">
+        <div class="flowchart">
+          <div
+            class="flow-box preprocessing"
+            style="
+              background: #fff;
+              border-left: 5px solid #e0e0e0;
+              color: #222;
+              box-shadow: 0 2px 8px rgba(44, 62, 80, 0.06);
+            "
+          >
+            <h3>1. 전처리</h3>
+            <div class="flow-items">
+              <span>컬러→흑백</span> → <span>명암개선</span> →
+              <span>노이즈제거</span>
+            </div>
+          </div>
+
+          <div class="flow-arrow">⬇️</div>
+
+          <div
+            class="flow-box detection"
+            style="
+              background: #fff;
+              border-left: 5px solid #e0e0e0;
+              color: #222;
+              box-shadow: 0 2px 8px rgba(44, 62, 80, 0.06);
+            "
+          >
+            <h3>2. 특징 검출</h3>
+            <div class="flow-items">
+              <span>동공검출</span> + <span>에지분석</span> +
+              <span>분산계산</span>
+            </div>
+          </div>
+
+          <div class="flow-arrow">⬇️</div>
+
+          <div
+            class="flow-box decision"
+            style="
+              background: #fff;
+              border-left: 5px solid #e0e0e0;
+              color: #222;
+              box-shadow: 0 2px 8px rgba(44, 62, 80, 0.06);
+            "
+          >
+            <h3>3. 판정 및 융합</h3>
+            <div class="flow-items">
+              <span>점수계산</span> → <span>가중융합</span> →
+              <span>최종결과</span>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="strategy"
+          style="background: #fff; border-left: 5px solid #e0e0e0; color: #222"
+        >
+          <h3>⭐ 핵심 전략: 계층적 판정 (확실한 것부터 우선)</h3>
+        </div>
+      </div>
+
+      <!-- 슬라이드 4: 전처리 단계 -->
+      <div class="slide">
+        <h1>🔧 1단계: 전처리</h1>
+
+        <div class="preprocessing-steps">
+          <div class="step">
+            <h3>Step 1: 흑백 변환</h3>
+            <code>cv2.cvtColor(eye_img, cv2.COLOR_BGR2GRAY)</code>
+            <p>
+              <strong>목적:</strong> 조명/피부색 노이즈 제거, OpenCV 함수 최적화
+            </p>
+          </div>
+
+          <div class="step">
+            <h3>Step 2: 명암 대비 향상 (CLAHE)</h3>
+            <code>cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))</code>
+            <p><strong>매개변수 선택:</strong></p>
+            <ul>
+              <li>clipLimit=2.0: 과도한 대비 방지 (1.0~4.0 범위에서 중간값)</li>
+              <li>tileGridSize=(8,8): 90x90 이미지에 적합한 지역 크기</li>
+            </ul>
+          </div>
+
+          <div class="step">
+            <h3>Step 3: 노이즈 제거 (가우시안 블러)</h3>
+            <code>cv2.GaussianBlur(img, (5,5), 0)</code>
+            <p>
+              <strong>(5,5) 선택 이유:</strong> 피부 질감 제거하면서 주요 경계
+              보존
+            </p>
+            <ul>
+              <li>(3,3)은 너무 약함 / (9,9)는 중요한 경계까지 흐려짐</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 슬라이드 5: 핵심 검출 알고리즘 -->
+      <div class="slide">
+        <h1>🎯 2단계: 특징 검출</h1>
+
+        <div class="detection-priority">
+          <div class="priority-1">
+            <h3>🥇 1순위: 동공 검출 (절대적 기준)</h3>
+            <code>cv2.HoughCircles(..., minRadius=7, maxRadius=20)</code>
+            <div class="logic">
+              <strong>논리:</strong> 동공이 보이면 100% 눈을 뜬 상태 → 즉시 0.0
+              반환<br />
+              <strong>의의:</strong> False Positive 방지, 확실한 판정 기준 제공
+            </div>
+          </div>
+
+          <div class="priority-2">
+            <h3>🥈 2순위: 가로 에지 분석 (70% 가중치)</h3>
+            <code>cv2.Sobel(img, CV_64F, 0, 1, ksize=5)</code>
+            <div class="logic">
+              <strong>논리:</strong> 눈 감음 → 강한 가로선 (위아래 눈꺼풀
+              경계)<br />
+              <strong>매개변수:</strong> ksize=5로 두꺼운 눈꺼풀 경계선까지 감지
+            </div>
+          </div>
+
+          <div class="priority-3">
+            <h3>🥉 3순위: 밝기 분산 (30% 가중치)</h3>
+            <code>np.var(gray_eye)</code>
+            <div class="logic">
+              <strong>논리:</strong> 눈 감음 → 균일한 밝기 → 낮은 분산<br />
+              <strong>역할:</strong> 에지 검출의 보조 지표, 특수 상황 대응
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 슬라이드 6: 매개변수 상세 분석 -->
+      <div class="slide">
+        <h1>⚙️ 핵심 매개변수 분석</h1>
+
+        <div class="parameter-table">
+          <table>
+            <tr>
+              <th>함수</th>
+              <th>매개변수</th>
+              <th>선택 값</th>
+              <th>선택 근거</th>
+            </tr>
+            <tr>
+              <td>HoughCircles</td>
+              <td>dp</td>
+              <td>1.0</td>
+              <td>최고 정밀도 (속도보다 정확도 우선)</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td>param2</td>
+              <td>30</td>
+              <td>False Positive 방지 (너무 낮으면 노이즈)</td>
+            </tr>
+            <tr>
+              <td>Sobel</td>
+              <td>ksize</td>
+              <td>5</td>
+              <td>두꺼운 눈꺼풀 경계선 감지 (3은 너무 얇음)</td>
+            </tr>
+            <tr>
+              <td>임계값</td>
+              <td>EDGE_MIN/MAX</td>
+              <td>5.0 / 30.0</td>
+              <td>경험적 눈 뜸/감음 범위</td>
+            </tr>
+            <tr>
+              <td>임계값</td>
+              <td>VARIANCE_MIN/MAX</td>
+              <td>300.0 / 1500.0</td>
+              <td>밝기 분산 기준값</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="threshold-visual">
+          <h3>📊 임계값 설정 근거</h3>
+          <p>눈 뜸 ←── 5.0 ────── 30.0 ──→ 눈 감음</p>
+          <p>(에지 밀도 기준)</p>
+          <br />
+          <p>높은 분산(1500+) ←── 300 ──→ 낮은 분산</p>
+          <p>(밝기 분산 기준)</p>
+        </div>
+      </div>
+
+      <!-- 슬라이드 7: 최종 판정 로직 -->
+      <div class="slide">
+        <h1>⚖️ 3단계: 판정 및 융합</h1>
+
+        <div class="decision-logic">
+          <div class="if-condition">
+            <h3>IF 동공 검출됨:</h3>
+            <div class="result">→ 즉시 return 0 (확실히 눈 뜸)</div>
+            <p><strong>의의:</strong> 절대적 기준으로 즉시 판정</p>
+          </div>
+
+          <div class="else-condition">
+            <h3>ELSE:</h3>
+            <div class="calculation">
+              <code>final_score = 0.7 × edge_score + 0.3 × variance_score</code>
+              <p><strong>가중치 근거:</strong></p>
+              <ul>
+                <li>에지 0.7: 눈 감김의 가장 강력한 신호 (주요 특징)</li>
+                <li>분산 0.3: 보조적 검증 지표 (환경 변화 대응)</li>
+              </ul>
+            </div>
+
+            <div class="final-decision">
+              <code>if (result ≤ 0.95): return 0 # 눈 뜸</code><br />
+              <code>else: return 1 # 눈 감음</code>
+              <p>
+                <strong>0.95 기준:</strong> 엄격한 판정으로 False Positive 방지
+              </p>
+              <p>(확실하지 않으면 "눈 뜸"으로 보수적 판정)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 슬라이드 8: 치명적 한계점 -->
+      <div class="slide">
+        <h1>⚠️ 솔직한 결과 분석</h1>
+
+        <div class="critical-issue">
+          <h2>🚨 치명적 문제: 눈 감음 미감지</h2>
+          <div class="risk-box">
+            <p>눈 감음 놓침 = 졸음 상황 놓침 = <strong>사고 위험</strong></p>
+            <p>실제 서비스 적용 시 생명과 직결되는 문제</p>
+          </div>
+        </div>
+
+        <div class="comparison-others">
+          <h3>📊 다른 방법과 비교</h3>
+          <table>
+            <tr>
+              <th></th>
+              <th>EAR(MediaPipe)</th>
+              <th>우리 OpenCV</th>
+            </tr>
+            <tr>
+              <td>눈 뜸 감지</td>
+              <td>95%+</td>
+              <td>90%+ ✅</td>
+            </tr>
+            <tr>
+              <td>눈 감음 감지</td>
+              <td>90%+</td>
+              <td>60%- ❌</td>
+            </tr>
+            <tr>
+              <td>개인차 적응</td>
+              <td>✅</td>
+              <td>❌ (고정 임계값)</td>
+            </tr>
+            <tr>
+              <td>부분적 감음</td>
+              <td>✅</td>
+              <td>❌ (0 or 1만 가능)</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="why-failed">
+          <h3>🔍 실패 원인</h3>
+          <ul>
+            <li>
+              <strong>개인차 무시:</strong> 눈꺼풀 두께, 속눈썹, 피부색 차이
+            </li>
+            <li>
+              <strong>단순한 특징:</strong> 가로선+분산만으로는 복잡한 상황 대응
+              한계
+            </li>
+            <li>
+              <strong>고정 임계값:</strong> 5.0~30.0이 모든 사람에게 맞지 않음
+            </li>
+            <li><strong>시간적 정보 부족:</strong> 단일 프레임 분석의 한계</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 슬라이드 9: 트러블슈팅 -->
+      <div class="slide">
+        <h1>🔧 트러블슈팅: 매개변수 튜닝의 현실</h1>
+
+        <div class="troubleshooting-content">
+          <div class="trouble-box">
+            <h3>😰 겪었던 문제들</h3>
+            <ul>
+              <li>
+                <strong>매개변수 기준 부재:</strong> clipLimit, ksize, 임계값을
+                어떻게 정해야 할지 막막
+              </li>
+              <li>
+                <strong>무작정 시행착오:</strong> 1씩, 2씩 증가/감소하며 일일이
+                테스트
+              </li>
+              <li>
+                <strong>변화 미미:</strong> 값을 바꿔도 결과에 큰 차이가 없어서
+                방향을 잡기 어려움
+              </li>
+              <li>
+                <strong>객관적 평가 부족:</strong> "더 좋아졌다/나빠졌다"를
+                눈으로만 판단
+              </li>
+            </ul>
+          </div>
+
+          <div class="solution-box">
+            <h3>💡 팀원 피드백 & 깨달음</h3>
+            <ul>
+              <li>
+                <strong>OpenCV 한계 인정:</strong> "OpenCV만으로는 이정도가
+                자연스럽다"
+              </li>
+              <li>
+                <strong>관점 전환:</strong> 구현에만 급급하지 말고
+                <strong>알고리즘 플로우</strong> 이해에 집중
+              </li>
+              <li>
+                <strong>함수별 역할 파악:</strong> 각 OpenCV 함수가 왜 필요한지,
+                무엇을 하는지 학습
+              </li>
+              <li>
+                <strong>부담감 해소:</strong> "완벽한 결과"보다는 "학습 과정"에
+                의미 두기
+              </li>
+            </ul>
+          </div>
+
+          <div class="learning-box">
+            <h3>📚 레퍼런스 조사를 통한 학습</h3>
+            <ul>
+              <li>
+                <strong>다른 접근법 발견:</strong> 대부분이 홍채(동공) 검출을
+                핵심으로 사용
+              </li>
+              <li>
+                <strong>원형 검출의 중요성:</strong> HoughCircles가 왜 이렇게
+                중요한지 이해
+              </li>
+              <li>
+                <strong>EAR 방식 학습:</strong> MediaPipe + Eye Aspect Ratio의
+                우수성 인지
+              </li>
+              <li>
+                <strong>한계 수용:</strong> OpenCV 단독으로는 상업적 수준 달성
+                어려움 인정
+              </li>
+            </ul>
+          </div>
+
+          <div
+            style="
+              background: #e8f5e8;
+              padding: 20px;
+              border-radius: 10px;
+              border-left: 5px solid #4caf50;
+              margin-top: 20px;
+            "
+          >
+            <h3>🎯 결과적으로...</h3>
+            <p>
+              <strong
+                >100% 해소는 못했지만, 방향성을 잡을 수 있었습니다!</strong
+              >
+            </p>
+            <p>→ 기술의 한계를 이해하고, 다른 접근법의 필요성을 깨달음</p>
+            <p>→ 컴퓨터 비전의 기본 개념과 OpenCV 함수들의 동작 원리 학습</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 슬라이드 10: 결론 -->
+      <div class="slide">
+        <h1>💭 결론</h1>
+
+        <div class="honest-assessment">
+          <div class="what-learned">
+            <h3>✅ 배운 것</h3>
+            <ul>
+              <li>컴퓨터 비전의 기본 원리 이해</li>
+              <li>OpenCV 함수들의 동작 방식과 매개변수 역할</li>
+              <li>임계값 기반 알고리즘 설계 경험</li>
+              <li>이미지 전처리의 중요성</li>
+              <li>계층적 판정 전략의 효과</li>
+              <li>기술의 한계 인정과 대안 모색</li>
+            </ul>
+          </div>
+
+          <div class="what-missing">
+            <h3>❌ 부족한 것</h3>
+            <ul>
+              <li>실용적 정확도 (특히 눈 감음 60%)</li>
+              <li>개인차 적응 능력</li>
+              <li>실시간 성능 최적화</li>
+              <li>부분적 감음 상태 감지</li>
+              <li>시계열 분석 (연속 프레임)</li>
+              <li>환경 변화 대응력</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="final-message">
+          <div class="reality-check">
+            <h2>"컴퓨터 비전의 기본은 이해했지만,</h2>
+            <h2>실제 생명과 관련된 시스템에는 아직 부족합니다."</h2>
+          </div>
+
+          <div class="practical-use">
+            <p><strong>현재 수준:</strong> 학습/연구용 프로토타입</p>
+            <p>
+              <strong>실무 적용:</strong> 메인 시스템의 보조 기능으로만 가능
+            </p>
+            <p>
+              <strong>향후 방향:</strong> 딥러닝 방식과의 하이브리드 접근 필요
+            </p>
+          </div>
+
+          <div
+            style="
+              background: #f0f8ff;
+              padding: 25px;
+              border-radius: 10px;
+              margin-top: 30px;
+            "
+          >
+            <h3>🌟 핵심 메시지</h3>
+            <p>기술의 한계를 인정하고, 지속적으로 학습하며,</p>
+            <p>더 나은 해결책을 모색하는 것이 진정한 개발자의 자세입니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 네비게이션 -->
+    <div class="navigation">
+      <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">
+        이전
+      </button>
+      <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">
+        다음
+      </button>
+    </div>
+
+    <!-- 슬라이드 카운터 -->
+    <div class="slide-counter">
+      <span id="slideNumber">1</span> / <span id="totalSlides">10</span>
+    </div>
+
+    <script>
+      let currentSlide = 0;
+      const slides = document.querySelectorAll(".slide");
+      const totalSlides = slides.length;
+
+      document.getElementById("totalSlides").textContent = totalSlides;
+
+      function showSlide(n) {
+        slides[currentSlide].classList.remove("active");
+        currentSlide = (n + totalSlides) % totalSlides;
+        slides[currentSlide].classList.add("active");
+
+        document.getElementById("slideNumber").textContent = currentSlide + 1;
+
+        // 버튼 상태 업데이트
+        document.getElementById("prevBtn").disabled = currentSlide === 0;
+        document.getElementById("nextBtn").disabled =
+          currentSlide === totalSlides - 1;
+      }
+
+      function changeSlide(direction) {
+        if (direction === 1 && currentSlide < totalSlides - 1) {
+          showSlide(currentSlide + 1);
+        } else if (direction === -1 && currentSlide > 0) {
+          showSlide(currentSlide - 1);
+        }
+      }
+
+      // 키보드 네비게이션
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight" || e.key === " ") {
+          changeSlide(1);
+        } else if (e.key === "ArrowLeft") {
+          changeSlide(-1);
+        }
+      });
+
+      // 초기 버튼 상태 설정
+      showSlide(0);
+    </script>
+  </body>
+</html>

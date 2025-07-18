@@ -1,5 +1,26 @@
 # 📂 SleepyDriver 프로젝트 구조
 
+## 🎯 프로젝트 개요
+
+**운전자 피로도 분석 시스템** - 영상 기반 눈 감김 분석을 통한 실시간 피로도 판단 라이브러리
+
+### 📋 프로젝트 목적
+
+- **운전자의 눈이 감겼는가를 이진 분류**
+- **눈을 감은 시간이 몇 초인지 정량 분석**
+- **실시간 운전자 피로도 분석 모듈의 통합 라이브러리 구축**
+- **스마트카 연계**: ADAS 및 자율주행 시스템의 운전자 모니터링 기능 강화
+- **사회적 효과**: 사고 예방 AI 구현 가능
+- **기술 학습 효과**: 실시간 영상 처리, 시계열 데이터 분석, Vision 기반 분류 등 산업 적용력 높은 실전형 경험
+
+### 👥 팀원 구성
+
+- **김진현**: AIHub 기반 딥러닝 모델 설계 및 적외선 딥러닝 라벨 정리, PyTorch GPU 리서치, 적외선 모델 구현 및 학습, 오류 디버깅 지원 (infrared_mlp_model.py)
+- **김호탁**: 전처리 모듈 구축 및 구조 기획, 좌표 기반 눈 감김 판별 알고리즘 구현, 딥러닝 모델 학습 및 통합, 상속 구조 정리 및 패키지화 주도 (point_model.py)
+- **박준규**: OpenCV 기반 접근법 개발, 디렉토리 정리 및 구조 패키지화, 졸음 검출 모듈 구현, PyPI 라이브러리 배포 주도 (opencv_model.py)
+- **안승현**: Mediapipe 기반 좌표 추출 및 눈 감김 판별 알고리즘 구현, Kaggle 데이터 기반 딥러닝 모델 개발 및 최적화, PyTorch GPU 환경 세팅 및 적외선 모델 학습 참여 (mlp_model.py)
+- **윤선아**: 데이터 수집 및 머신러닝 모델 (SVM, XGBoost, RandomForest) 개발 전반 수행, 모델 최적화 및 적용(ml_model.py)
+
 ## 🎯 배포용 권장 구조
 
 ```
@@ -91,22 +112,22 @@ git add .
 git commit -m "feat: PyPI 배포 준비 완료"
 
 # 2. 태그 생성 (배포 버전)
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.2.0
+git push origin v1.2.0
 ```
 
 ### 배포용 브랜치 생성 (선택사항)
 
 ```bash
 # 1. 배포용 브랜치 생성
-git checkout -b release/v1.0.0
+git checkout -b release/v1.2.0
 
 # 2. 불필요한 파일 제거 (이미 .gitignore 설정됨)
 git rm -r _legacy/ --cached  # Git에서만 제거, 로컬은 유지
 
 # 3. 깔끔한 배포용 커밋
-git commit -m "release: v1.0.0 PyPI 배포용"
-git push origin release/v1.0.0
+git commit -m "release: v1.2.0 PyPI 배포용"
+git push origin release/v1.2.0
 ```
 
 ## 📊 패키지 크기 최적화
@@ -115,7 +136,7 @@ git push origin release/v1.0.0
 
 ```bash
 # 전체 패키지 크기
-du -sh dist/sleepy_driver-1.0.0-py3-none-any.whl  # ~7.8MB
+du -sh dist/sleepy_driver-1.2.0-py3-none-any.whl  # ~7.8MB
 
 # 가장 큰 파일들
 find sleepy_driver/ -type f -size +1M -exec ls -lh {} \;
@@ -134,24 +155,25 @@ find sleepy_driver/ -type f -size +1M -exec ls -lh {} \;
 
 ```python
 # pyproject.toml
-version = "1.0.0"  # 메이저.마이너.패치
+version = "1.2.0"  # 메이저.마이너.패치
 
 # 버전 업그레이드 예시
-1.0.0 → 1.0.1  # 버그 수정
-1.0.1 → 1.1.0  # 새 기능 추가
-1.1.0 → 2.0.0  # 대규모 변경 (Breaking Change)
+1.2.0 → 1.2.1  # 버그 수정
+1.2.1 → 1.3.0  # 새 기능 추가
+1.3.0 → 2.0.0  # 대규모 변경 (Breaking Change)
 ```
 
 ### 2. 릴리즈 노트
 
 ```markdown
-## v1.0.0 (2024-01-17)
+## v1.2.0 (2025-07-17)
 
 ### ✨ Features
 
-- 4가지 AI 모델 지원 (OpenCV, ML, MLP, Point)
+- 5가지 AI 모델 지원 (OpenCV, ML, MLP, Point, Infrared)
 - CLI 도구 (`sleepy-driver-demo`)
 - 실시간 졸음 감지 (~30 FPS)
+- 원라이너 API (`start_detection()`)
 
 ### 📦 Dependencies
 
@@ -192,3 +214,8 @@ jobs:
 4. **버전 자동화** - `bump2version` 도구 사용
 
 하지만 **현재 상태로도 완벽하게 배포 가능**합니다! 🚀
+
+## 📞 연락처
+
+- **GitHub**: https://github.com/kimhotac/sleepy-driver-detector
+- **이메일**: junju404@naver.com (박준규)

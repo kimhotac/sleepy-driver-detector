@@ -5,19 +5,22 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sleepy-driver"
 version = "1.2.0"
-description = "AI-powered drowsiness detection library for driver safety"
+description = "운전자 피로도 분석 시스템 - 영상 기반 눈 감김 분석을 통한 실시간 피로도 판단 라이브러리"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {file = "LICENSE"}
 authors = [
-    {name = "SleepyDriver Team", email = "sleepy.driver@example.com"},
+    {name = "SleepyDriver Team", email = "junju404@naver.com"},
 ]
-keywords = ["drowsiness", "detection", "ai", "computer-vision", "safety", "driver"]
+keywords = ["drowsiness", "fatigue", "driver", "safety", "computer-vision", "ai", "real-time", "monitoring", "adas", "autonomous-driving"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Scientific/Engineering :: Image Processing",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
@@ -63,10 +66,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/sleepy-driver/sleepy-driver"
-Documentation = "https://sleepy-driver.readthedocs.io/"
-Repository = "https://github.com/sleepy-driver/sleepy-driver.git"
-"Bug Tracker" = "https://github.com/sleepy-driver/sleepy-driver/issues"
+Homepage = "https://github.com/kimhotac/sleepy-driver-detector"
+Documentation = "https://github.com/kimhotac/sleepy-driver-detector#readme"
+Repository = "https://github.com/kimhotac/sleepy-driver-detector.git"
+"Bug Tracker" = "https://github.com/kimhotac/sleepy-driver-detector/issues"
 
 [project.scripts]
 sleepy-driver-demo = "sleepy_driver.cli:main"

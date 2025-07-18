@@ -1,5 +1,6 @@
 """
 SleepyDriver 라이브러리 설치 스크립트
+운전자 피로도 분석 시스템 - 영상 기반 눈 감김 분석을 통한 실시간 피로도 판단
 """
 
 from setuptools import setup, find_packages
@@ -9,13 +10,13 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="sleepy-driver",
-    version="1.0.0",
+    version="1.2.0",
     author="SleepyDriver Team",
-    author_email="sleepy.driver@example.com",
-    description="AI-powered drowsiness detection library for driver safety",
+    author_email="junju404@naver.com",
+    description="운전자 피로도 분석 시스템 - 영상 기반 눈 감김 분석을 통한 실시간 피로도 판단 라이브러리",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/sleepy-driver/sleepy-driver",
+    url="https://github.com/kimhotac/sleepy-driver-detector",
     packages=find_packages(),
     include_package_data=True,
     package_data={
@@ -27,14 +28,19 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: Multimedia :: Video",
+        "Topic :: Scientific/Engineering :: Image Processing",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Operating System :: OS Independent",
     ],
     python_requires=">=3.8",
     install_requires=[
@@ -69,5 +75,5 @@ setup(
             "sleepy-driver-demo=examples.demo:main",
         ],
     },
-    keywords="drowsiness detection, driver safety, computer vision, AI, machine learning",
+    keywords="drowsiness, fatigue, driver, safety, computer-vision, ai, real-time, monitoring, adas, autonomous-driving",
 ) 

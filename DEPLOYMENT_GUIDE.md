@@ -1,6 +1,27 @@
 # 🚀 SleepyDriver PyPI 배포 가이드
 
-이 가이드는 SleepyDriver 라이브러리를 PyPI에 배포하는 방법을 단계별로 설명합니다.
+이 가이드는 **운전자 피로도 분석 시스템** SleepyDriver 라이브러리를 PyPI에 배포하는 방법을 단계별로 설명합니다.
+
+## 📋 프로젝트 개요
+
+**운전자 피로도 분석 시스템** - 영상 기반 눈 감김 분석을 통한 실시간 피로도 판단 라이브러리
+
+### 🎯 프로젝트 목적
+
+- **운전자의 눈이 감겼는가를 이진 분류**
+- **눈을 감은 시간이 몇 초인지 정량 분석**
+- **실시간 운전자 피로도 분석 모듈의 통합 라이브러리 구축**
+- **스마트카 연계**: ADAS 및 자율주행 시스템의 운전자 모니터링 기능 강화
+- **사회적 효과**: 사고 예방 AI 구현 가능
+- **기술 학습 효과**: 실시간 영상 처리, 시계열 데이터 분석, Vision 기반 분류 등 산업 적용력 높은 실전형 경험
+
+### 👥 팀원 구성
+
+- **김진현**: AIHub 기반 딥러닝 모델 설계 및 적외선 딥러닝 라벨 정리, PyTorch GPU 리서치, 적외선 모델 구현 및 학습, 오류 디버깅 지원
+- **김호탁**: 전처리 모듈 구축 및 구조 기획, 좌표 기반 눈 감김 판별 알고리즘 구현, 딥러닝 모델 학습 및 통합, 상속 구조 정리 및 패키지화 주도
+- **박준규**: OpenCV 기반 접근법 개발, 디렉토리 정리 및 구조 패키지화, 졸음 검출 모듈 구현, PyPI 라이브러리 배포 주도
+- **안승현**: Mediapipe 기반 좌표 추출 및 눈 감김 판별 알고리즘 구현, Kaggle 데이터 기반 딥러닝 모델 개발 및 최적화, PyTorch GPU 환경 세팅 및 적외선 모델 학습 참여
+- **윤선아**: 데이터 수집 및 머신러닝 모델 (SVM, XGBoost, RandomForest) 개발 전반 수행, 모델 최적화 및 적용, 성능 지표 추출, 최종 평가 및 오류 대응, 최종 보고서 및 발표자료 작성 주도
 
 ## 📋 사전 준비
 
@@ -50,7 +71,7 @@ rm -rf build/ dist/
 
 ```bash
 # pyproject.toml과 setup.py에서 버전 확인
-# 버전 형식: 1.0.0, 1.0.1, 1.1.0 등
+# 버전 형식: 1.2.0, 1.2.1, 1.3.0 등
 ```
 
 ## 🔨 패키지 빌드
@@ -63,15 +84,15 @@ python -m build
 
 # 생성된 파일 확인
 ls -la dist/
-# sleepy_driver-1.0.0-py3-none-any.whl
-# sleepy-driver-1.0.0.tar.gz
+# sleepy_driver-1.2.0-py3-none-any.whl
+# sleepy-driver-1.2.0.tar.gz
 ```
 
 ### 2. 빌드 결과 검증
 
 ```bash
 # 패키지 내용 확인
-python -m zipfile -l dist/sleepy_driver-1.0.0-py3-none-any.whl
+python -m zipfile -l dist/sleepy_driver-1.2.0-py3-none-any.whl
 
 # 메타데이터 확인
 python -m twine check dist/*
@@ -150,10 +171,10 @@ sleepy-driver-demo --version
 
 ```python
 # pyproject.toml
-version = "1.0.1"  # 1.0.0 → 1.0.1
+version = "1.2.1"  # 1.2.0 → 1.2.1
 
 # setup.py (사용 중인 경우)
-version="1.0.1"
+version="1.2.1"
 ```
 
 ### 2. 변경사항 문서화
@@ -161,7 +182,7 @@ version="1.0.1"
 ```markdown
 # CHANGELOG.md 또는 README.md에 추가
 
-## [1.0.1] - 2024-01-15
+## [1.2.1] - 2025-07-17
 
 ### Fixed
 
@@ -303,4 +324,9 @@ jobs:
 2. CLI 명령어 `sleepy-driver-demo` 사용 가능
 3. PyPI 통계에서 다운로드 수 확인 가능
 
-**이제 전 세계 개발자들이 당신의 라이브러리를 사용할 수 있습니다! 🌍✨**
+**이제 전 세계 개발자들이 당신의 운전자 피로도 분석 라이브러리를 사용할 수 있습니다! 🌍✨**
+
+## 📞 연락처
+
+- **GitHub**: https://github.com/kimhotac/sleepy-driver-detector
+- **이메일**: junju404@naver.com (박준규)
