@@ -4,11 +4,11 @@
 [![Python](https://img.shields.io/pypi/pyversions/sleepy-driver)](https://pypi.org/project/sleepy-driver/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**SleepyDriver**는 실시간 비디오에서 운전자의 졸음 상태를 AI로 감지하는 파이썬 라이브러리입니다. 4가지 다양한 감지 모델을 지원하며, 간단한 API로 프로젝트에 쉽게 통합할 수 있습니다.
+**SleepyDriver**는 실시간 비디오에서 운전자의 졸음 상태를 AI로 감지하는 파이썬 라이브러리입니다. 5가지 다양한 감지 모델을 지원하며, 간단한 API로 프로젝트에 쉽게 통합할 수 있습니다.
 
 ## ✨ 주요 기능
 
-- 🎯 **4가지 감지 모델**: OpenCV, 머신러닝(RF), 딥러닝(CNN), MediaPipe 기반
+- 🎯 **5가지 감지 모델**: OpenCV, 머신러닝(RF), 딥러닝(CNN), MediaPipe, 적외선 기반
 - ⚡ **실시간 처리**: 웹캠에서 실시간 졸음 감지 (~30 FPS)
 - 🔧 **간단한 API**: 3줄의 코드로 졸음 감지 시스템 구축
 - 📦 **플러그인 아키텍처**: 사용자 정의 모델 쉽게 추가 가능
@@ -51,138 +51,22 @@ sleepy-driver-demo --list-models
 ```python
 # 1줄로 바로 시작!
 from sleepy_driver import start_detection
-start_detection()  # 기본 OpenCV 모델로 바로 웹캠 감지 시작
-
-# 모델 선택해서 시작
 start_detection('mlp')  # MLP 모델로 바로 시작
 start_detection('ml', threshold_ms=2000)  # ML 모델, 2초 임계값
-```
-
-#### 📝 직접 제어하기
-
-```python
-from sleepy_driver import quick_detector
-import cv2
-
-# 1줄로 감지기 생성
-detector = quick_detector('opencv')
-
-# 웹캠에서 실시간 감지
-cap = cv2.VideoCapture(0)
-while True:
-    ret, frame = cap.read()
-
-    # 1줄로 졸음 감지!
-    result = detector.detect(frame)
-
-    if result.is_drowsy:
-        print(f"😴 졸음 감지! {result.closed_duration_ms}ms")
+start_detection('opencv')  # OpenCV 모델
+start_detection('point')  # MediaPipe 모델
+start_detection('infrared')  # 적외선 모델
 ```
 
 ## 📋 지원 모델
 
-| 모델       | 설명                           | 장점              | 의존성       |
-| ---------- | ------------------------------ | ----------------- | ------------ |
-| **opencv** | OpenCV 기반 전통적 컴퓨터 비전 | 빠름, 의존성 적음 | 없음         |
-| **ml**     | RandomForest 머신러닝          | 균형잡힌 성능     | scikit-learn |
-| **mlp**    | CNN 딥러닝                     | 높은 정확도       | PyTorch      |
-| **point**  | MediaPipe 랜드마크             | 실시간성 우수     | 없음         |
-
-## 💡 고급 사용법
-
-### 커스텀 설정
-
-```python
-from sleepy_driver import DrowsinessDetector, TimeBased
-from sleepy_driver.models import OpenCVEyeModel
-
-# 직접 구성
-eye_model = OpenCVEyeModel()
-analyzer = TimeBased(threshold_ms=1500)  # 1.5초 임계값
-
-detector = DrowsinessDetector.create_with_custom_components(
-    eye_model=eye_model,
-    drowsiness_analyzer=analyzer
-)
-```
-
-### 결과 분석
-
-```python
-result = detector.detect(frame)
-
-print(f"성공: {result.success}")
-print(f"졸음 상태: {result.is_drowsy}")
-print(f"눈 감은 시간: {result.closed_duration_ms}ms")
-print(f"좌/우 눈 상태: {result.left_eye_closed}, {result.right_eye_closed}")
-print(f"신뢰도: {result.confidence}")
-```
-
-### 사용자 정의 모델
-
-```python
-from sleepy_driver.models.base import EyeStateDetector
-
-class MyCustomModel(EyeStateDetector):
-    def initialize(self) -> bool:
-        # 모델 초기화
-        return True
-
-    def detect_eye_state(self, eye_image) -> tuple[bool, float]:
-        # 여기에 당신만의 알고리즘 구현
-        is_closed = your_algorithm(eye_image)
-        confidence = 0.95
-        return is_closed, confidence
-
-# 사용
-detector = DrowsinessDetector.create_with_custom_components(
-    eye_model=MyCustomModel()
-)
-```
-
-## 🎯 실제 프로젝트 통합
-
-### 웹 서비스 통합
-
-```python
-from flask import Flask, Response
-from sleepy_driver import quick_detector
-import cv2
-
-app = Flask(__name__)
-detector = quick_detector('mlp')
-
-@app.route('/drowsiness_check', methods=['POST'])
-def check_drowsiness():
-    # 이미지 받아서 졸음 감지
-    result = detector.detect(image)
-    return {
-        'is_drowsy': result.is_drowsy,
-        'duration_ms': result.closed_duration_ms,
-        'confidence': result.confidence
-    }
-```
-
-### IoT/임베디드 시스템
-
-```python
-import RPi.GPIO as GPIO
-from sleepy_driver import quick_detector
-
-detector = quick_detector('opencv')  # 가벼운 모델
-buzzer_pin = 18
-
-def drowsiness_alert():
-    GPIO.output(buzzer_pin, GPIO.HIGH)
-    time.sleep(0.5)
-    GPIO.output(buzzer_pin, GPIO.LOW)
-
-# 실시간 감지
-while True:
-    result = detector.detect(frame)
-    if result.is_drowsy:
-        drowsiness_alert()
-```
+| 모델         | 설명                           | 장점              | 의존성       |
+| ------------ | ------------------------------ | ----------------- | ------------ |
+| **opencv**   | OpenCV 기반 전통적 컴퓨터 비전 | 빠름, 의존성 적음 | 없음         |
+| **ml**       | RandomForest 머신러닝          | 균형잡힌 성능     | scikit-learn |
+| **mlp**      | CNN 딥러닝                     | 높은 정확도       | PyTorch      |
+| **point**    | MediaPipe 랜드마크             | 실시간성 우수     | 없음         |
+| **infrared** | 적외선 CNN 딥러닝              | 야간 감지 우수    | PyTorch      |
 
 ## 📊 성능 벤치마크
 
@@ -192,8 +76,32 @@ while True:
 | ML (RF)   | ~30 FPS  | 90%    | ~100MB        |
 | MLP (CNN) | ~28 FPS  | 95%    | ~200MB        |
 | Point     | ~40 FPS  | 80%    | ~30MB         |
+| Infrared  | ~25 FPS  | 92%    | ~250MB        |
 
 _테스트 환경: MacBook Pro M1, 720p 웹캠_
+
+## 👥 팀원 소개
+
+**운전자 피로도 분석 시스템** - 영상 기반 눈 감김 분석을 통한 실시간 피로도 판단 라이브러리
+
+### 🎯 프로젝트 목적
+
+- **운전자의 눈이 감겼는가를 이진 분류**
+- **눈을 감은 시간이 몇 초인지 정량 분석**
+- **실시간 운전자 피로도 분석 모듈의 통합 라이브러리 구축**
+- **스마트카 연계**: ADAS 및 자율주행 시스템의 운전자 모니터링 기능 강화
+- **사회적 효과**: 사고 예방 AI 구현 가능
+- **기술 학습 효과**: 실시간 영상 처리, 시계열 데이터 분석, Vision 기반 분류 등 산업 적용력 높은 실전형 경험
+
+### 👨‍💻 개발 팀
+
+| 이름       | 역할                                                                                                                                                  | GitHub                                           |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| **김진현** | AIHub 기반 딥러닝 모델 설계 및 적외선 딥러닝 라벨 정리, PyTorch GPU 리서치, 적외선 모델 구현 및 학습, 오류 디버깅 지원                                | [@JinhyeonK](https://github.com/JinhyeonK)       |
+| **김호탁** | 전처리 모듈 구축 및 구조 기획, 좌표 기반 눈 감김 판별 알고리즘 구현, 딥러닝 모델 학습 및 통합, 상속 구조 정리 및 패키지화 주도                        | [@kimhotac](https://github.com/kimhotac)         |
+| **박준규** | OpenCV 기반 접근법 개발, 디렉토리 정리 및 구조 패키지화, 졸음 검출 모듈 구현, PyPI 라이브러리 배포 주도                                               | [@ParkJunGyu26](https://github.com/ParkJunGyu26) |
+| **안승현** | Mediapipe 기반 좌표 추출 및 눈 감김 판별 알고리즘 구현, Kaggle 데이터 기반 딥러닝 모델 개발 및 최적화, PyTorch GPU 환경 세팅 및 적외선 모델 학습 참여 | [@asho227](https://github.com/asho227)           |
+| **윤선아** | 데이터 수집 및 머신러닝 모델 (SVM, XGBoost, RandomForest) 개발 전반 수행, 모델 최적화 및 적용                                                         | [@dotoriysa](https://github.com/dotoriysa)       |
 
 ## 🛠️ 개발자 가이드
 
@@ -201,8 +109,8 @@ _테스트 환경: MacBook Pro M1, 720p 웹캠_
 
 ```bash
 # 저장소 클론
-git clone https://github.com/sleepy-driver/sleepy-driver.git
-cd sleepy-driver
+git clone https://github.com/kimhotac/sleepy-driver-detector.git
+cd sleepy-driver-detector
 
 # 개발 의존성 설치
 pip install -e .[dev]
@@ -230,7 +138,7 @@ twine upload dist/*
 
 ## 🤝 기여하기
 
-1. Fork 저장소
+1. [Fork 저장소](https://github.com/kimhotac/sleepy-driver-detector/fork)
 2. 기능 브랜치 생성 (`git checkout -b feature/amazing-feature`)
 3. 변경사항 커밋 (`git commit -m 'Add amazing feature'`)
 4. 브랜치 푸시 (`git push origin feature/amazing-feature`)
@@ -249,10 +157,10 @@ twine upload dist/*
 
 ## 🆘 지원 및 문의
 
-- 📖 **문서**: [sleepy-driver.readthedocs.io](https://sleepy-driver.readthedocs.io/)
-- 🐛 **버그 리포트**: [GitHub Issues](https://github.com/sleepy-driver/sleepy-driver/issues)
-- 💬 **디스커션**: [GitHub Discussions](https://github.com/sleepy-driver/sleepy-driver/discussions)
-- 📧 **이메일**: sleepy.driver@example.com
+- 📖 **문서**: [GitHub README](https://github.com/kimhotac/sleepy-driver-detector#readme)
+- 🐛 **버그 리포트**: [GitHub Issues](https://github.com/kimhotac/sleepy-driver-detector/issues)
+- 💬 **디스커션**: [GitHub Discussions](https://github.com/kimhotac/sleepy-driver-detector/discussions)
+- 📧 **이메일**: junju404@naver.com (박준규)
 
 ---
 
